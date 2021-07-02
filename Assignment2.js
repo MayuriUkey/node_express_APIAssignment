@@ -8,7 +8,6 @@ app.get('/products', (req, res) => {
     res.json(products)
 })
 
-
 //2.get product by id................app.get()
 app.get('/products/:id', (req, res) => {
     const singleProduct = products.find(
@@ -19,7 +18,6 @@ app.get('/products/:id', (req, res) => {
     }
     res.send(singleProduct)
 })
-
 
 //3.Add product.....................app.post()
 app.post('/products',(req,res)=>{
@@ -37,7 +35,6 @@ app.post('/products',(req,res)=>{
     products.push(product)
     res.send(product)
 })
-
 
 //4) Update product..................app.put()
 app.put('/products/:id',(req,res)=>{
@@ -58,7 +55,6 @@ app.put('/products/:id',(req,res)=>{
     res.send(Product)
 })
 
-
 //5) Delete product..................app.delete()
 app.delete('/products/:id',(req,res)=>{
     const singleProduct = products.find(
@@ -72,7 +68,6 @@ app.delete('/products/:id',(req,res)=>{
 
     res.send(singleProduct)
 })
-
 
 /*6) Create an API that takes the following request:
 
@@ -90,6 +85,24 @@ Response:
         "quantity":5
 }.............................................app.get()*/
 
+app.get('/products',(req,res)=>{
+    const id=req.query.id
+    const buy=req.query.buy
+    const singleProduct = products.find(
+      (product) => product._id=== parseInt(id)
+    )
+    if (!singleProduct) {
+      return res.status(404).send('Product Does Not Exist')
+    }
+    const availableQty =singleProduct.availableQuantity
+    if(availableQty>=buy){
+      singleProduct.availableQtuantity=availableQty-buy
+      const total = singleProduct.price*buy
+      return res.send(`id:`,singleProduct._id,`name:`,singleProduct.name,`price:`,singleProduct.price,`total:`,total,`quatity:`,buy)
+    }
+    res.send("out of stock")
+})
+
 function validateproduct(product){
   const schema ={
     name : Joi.string().required(),
@@ -97,7 +110,7 @@ function validateproduct(product){
     availableQuantity : Joi.number().required(),
     manufacturer : Joi.string().required
   };
-  return Joi.validate(product,schema)
+  return Joi.valid(product,schema)
 }
 
 app.listen(3000, () => {
