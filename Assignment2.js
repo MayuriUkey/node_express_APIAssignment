@@ -2,6 +2,7 @@ const express = require('express')
 const app = express()
 const Joi = require('joi')
 const { products } = require('./data')
+app.use(express.json())
 
 //1.get all products................app.get()
 app.get('/products', (req, res) => {
@@ -21,9 +22,9 @@ app.get('/products/:id', (req, res) => {
 
 //3.Add product.....................app.post()
 app.post('/products',(req,res)=>{
+    console.log(req.body)
     const {error} = validateproduct(req.body)
     if(error) return res.status(400).send(error.details[0].message)
-
     const product ={
       id: products.length+1,
       name: req.body.name,
@@ -31,7 +32,7 @@ app.post('/products',(req,res)=>{
       availableQuantity: req.body.availableQuantity,
       manufacturer: req.body.manufacturer
     }
-
+    console.log(product)
     products.push(product)
     res.send(product)
 })
@@ -45,14 +46,21 @@ app.put('/products/:id',(req,res)=>{
       return res.status(404).send('Product Does Not Exist')
     }
 
-    const {error} = validateproduct(req.body)
-    if(error) return res.status(400).send(error.details[0].message)
-
-    product.name =req.body.name;
-    product.price =req.body.price,
-    product.availableQuantity = req.body.availableQuantity,
-    product.manufacturer = req.body.manufacturer
-    res.send(Product)
+    //const {error} = validateproduct(req.body)
+    //if(error) return res.status(400).send(error.details[0].message)
+    if(req.body.name){
+      singleProduct.name =req.body.name
+    }
+    if(req.body.price){
+      singleProduct.price =req.body.price
+    }    
+    if(req.body.availableQuantity){
+      singleProduct.availableQuantity = req.body.availableQuantity
+    }
+    if(req.body.manufacturer){
+      singleProduct.manufacturer =req.body.manufacturer
+    }
+    res.send(singleProduct)
 })
 
 //5) Delete product..................app.delete()
@@ -85,7 +93,7 @@ Response:
         "quantity":5
 }.............................................app.get()*/
 
-app.get('/products',(req,res)=>{
+app.put('/products',(req,res)=>{
     const id=req.query.id
     const buy=req.query.buy
     const singleProduct = products.find(
@@ -94,11 +102,12 @@ app.get('/products',(req,res)=>{
     if (!singleProduct) {
       return res.status(404).send('Product Does Not Exist')
     }
-    const availableQty =singleProduct.availableQuantity
+    const index= products.indexOf(singleProduct)
+    const availableQty =products[index].availableQuantity
     if(availableQty>=buy){
-      singleProduct.availableQtuantity=availableQty-buy
+      products[index].availableQuantity=availableQty-buy
       const total = singleProduct.price*buy
-      return res.send(`id:`,singleProduct._id,`name:`,singleProduct.name,`price:`,singleProduct.price,`total:`,total,`quatity:`,buy)
+      return res.status(200).json({"id":singleProduct._id,"name":singleProduct.name,"priceperitem":singleProduct.price,"total":total,"quantity":buy})
     }
     res.send("out of stock")
 })
